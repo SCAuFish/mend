@@ -38,6 +38,7 @@ def run(config):
     np.random.seed(config.seed)
     torch.manual_seed(config.seed)
 
+    # 20230101-1: model is distilgpt2, with no tokenizer configured.
     model = models.get_model(config)
     tokenizer = models.get_tokenizer(config)
 
@@ -62,6 +63,7 @@ def run(config):
     else:
         raise ValueError(f"Unrecognized task {config.task}")
 
+    # 20230101-1: algorithm is `mend`
     alg_module = importlib.import_module(f"algs.{config.alg}")
     LOG.info(f"Loading class {config.alg.upper()} from module {alg_module}")
     AlgClass = getattr(alg_module, config.alg.upper())
@@ -78,6 +80,8 @@ def run(config):
             alg.loc_ids = loc_batch["input_ids"]
             alg.loc_masks = loc_batch["attention_mask"]
 
+    # Run 20230101-1 failed at EditTraining Creation: Torch not compiled with CUDA enabled
+    #   Gotta switch off to bolt, klogin or local machine with CUDA
     trainer = EditTrainer(alg, config, train_set, val_set)
     trainer.run()
 
